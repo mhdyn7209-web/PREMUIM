@@ -6378,7 +6378,7 @@ local function CreateAtmosphere(style)
 end
 
 TxTab:AddDropdown({
-    Name = "é›°ه›²و°—م‚¨مƒ•م‚§م‚¯مƒˆ",
+    Name = "idk",
     Default = "None",
     Options = {"None", "Dreamy", "Cyber", "Horror", "Sakura"},
     Callback = function(Value)
@@ -6396,7 +6396,7 @@ TxTab:AddDropdown({
 })
 
 TxTab:AddButton({
-    Name = "مƒ©مƒ³مƒ€مƒ é›°ه›²و°—",
+    Name = "مƒ©مƒ³مƒ€مƒ é›°ه›²و°— just make obfuscate strong",
     Callback = function()
         local styles = {"Dreamy", "Cyber", "Horror", "Sakura"}
         local random = styles[math.random(1, #styles)]
@@ -6482,7 +6482,7 @@ TxTab:AddButton({
 })
 
 TxTab:AddButton({
-    Name = "ه¤•و–¹4K (Evening)",
+    Name = "Evening",
     Callback = function()
         local Lighting = game:GetService("Lighting")
         
@@ -6956,10 +6956,10 @@ AuraTab:AddSlider({
     end    
 })
 
-AuraTab:AddSection({ Name = "<b>ه«Œم‚ڈم‚Œم‚ھمƒ¼مƒ©</b>" })
+AuraTab:AddSection({ Name = "Crazy Aura" })
 
 AuraTab:AddToggle({
-    Name = "ه«Œم‚ڈم‚Œم‚ھمƒ¼مƒ©",
+    Name = "Crazy Aura",
     Default = false,
     Save = true,
     Flag = "RepelAura",
@@ -9313,7 +9313,7 @@ InfoTab:AddLabel("Developer : Mrcat")
 
 InfoTab:AddLabel("UI Developer : Mrcat & هŒ–")
 
-InfoTab:AddLabel("وœ€çµ‚م‚¢مƒƒمƒ—مƒ‡مƒ¼مƒˆو—¥ : 27و—¥")
+InfoTab:AddLabel("Premuim Script 🔱")
 
 InfoTab:AddButton({
     Name = "Discord Invite Copy",
