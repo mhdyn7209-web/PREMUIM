@@ -689,7 +689,45 @@ Toggles["AntiKickGrab"] = DefTab:AddToggle({
     })
     
     
+DefTab:AddButton({
+    Name = "Anti Packet Spam (OP) <font color=\"rgb(0, 180, 0)\"><b>[PROTECT]</b></font>",
+    Callback = function()
+        local RawMetatable = getrawmetatable(game)
+        local OldNamecall = RawMetatable.__namecall
+        setreadonly(RawMetatable, false)
 
+        -- حجب حزم الإغراق والـ metaballs المسببة للـ Lag
+        RawMetatable.__namecall = newcclosure(function(self, ...)
+            local method = getnamecallmethod()
+            local args = {...}
+
+            if (method == "FireServer" or method == "fireServer") then
+                if type(args[1]) == "string" and (#args[1] > 200 or string.find(args[1], "metaballs")) then
+                    return nil
+                end
+            end
+
+            return OldNamecall(self, ...)
+        end)
+
+        setreadonly(RawMetatable, true)
+
+        -- تعطيل استجابات الـ Event محلياً لتخفيف الـ Ping وتجميد الشاشة
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local GrabEvents = ReplicatedStorage:FindFirstChild("GrabEvents")
+        if GrabEvents then
+            local ExtendGrabLine = GrabEvents:FindFirstChild("ExtendGrabLine")
+            if ExtendGrabLine and ExtendGrabLine:IsA("RemoteEvent") then
+                for _, connection in pairs(getconnections(ExtendGrabLine.OnClientEvent)) do
+                    connection:Disable()
+                end
+            end
+        end
+    end
+})
+
+    
+    
     DefTab:AddButton({
         Name = "AntiGrab<font color=\"rgb(0, 180, 0)\"><b>[GUCCI]</b></font>",
         Callback = function()
