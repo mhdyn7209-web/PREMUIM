@@ -3962,7 +3962,7 @@ PlrTab:AddToggle({
 PlrTab:AddSection({ Name = "<font color=\"rgb(0, 255, 0)\"><b>FOVâ€¢Thirdp</b></font>" })
 
     Toggles["ThirdP"] = PlrTab:AddToggle({
-        Name = "Thirdp",
+        Name = "ThirdP",
         Default = false,
         Save = true,
         Flag = "ThirdP",
@@ -5375,6 +5375,226 @@ TarTab:AddToggle({
             end
         end    
     })
+    
+TarTab:AddToggle({
+    Name = "Loop Kill Blob",
+    Default = false,
+    Callback = function(Value)
+        _G.LoopKillBlobActive = Value
+        
+        if Value then
+            local tt = Players:FindFirstChild(selectedPlrName)
+            
+            if not tt or not tt.Character or not tt.Character:FindFirstChild("HumanoidRootPart") then
+                Notify("Error", "Select a valid target!")
+                return
+            end
+
+            task.spawn(function()
+                while _G.LoopKillBlobActive do
+                    pcall(function()
+                        local lp = game.Players.LocalPlayer
+                        local char = lp.Character
+                        local seat = char and char.Humanoid.SeatPart
+                        local Blob = seat and seat.Parent
+                        
+                        -- Verify you are in the Blobman
+                        if Blob and Blob.Name == "CreatureBlobman" then
+                            local remotes = Blob:FindFirstChild("BlobmanSeatAndOwnerScript")
+                            local CG = remotes and remotes:FindFirstChild("CreatureGrab")
+                            local CD = remotes and remotes:FindFirstChild("CreatureRelease")
+                            local weld = Blob.RightDetector:FindFirstChild("RightWeld") or Blob.RightDetector:FindFirstChild("RigidConstraint")
+                            
+                            local HRP = Blob.HumanoidRootPart
+                            local pos = HRP.CFrame -- Save original position
+
+                            if tt.Character and tt.Character:FindFirstChild("HumanoidRootPart") and tt.Character.Humanoid.Health > 0 then
+                                -- 1. SNAP TO TARGET
+                                HRP.CFrame = tt.Character.HumanoidRootPart.CFrame
+                                task.wait(0.05) -- Reduced delay for speed
+                                
+                                -- 2. REPEAT UNTIL YOU OWN THEIR PHYSICS
+                                -- This is the 'Instant' part: it spams until the server gives up control
+                                local startTime = tick()
+                                repeat 
+                                    CG:FireServer(nil, tt.Character.HumanoidRootPart, weld)
+                                    CD:FireServer(weld)
+                                    
+                                    -- Keep glued to them while waiting for ownership
+                                    HRP.CFrame = tt.Character.HumanoidRootPart.CFrame
+                                    task.wait() 
+                                until not _G.LoopKillBlobActive or isnetworkowner(tt.Character.HumanoidRootPart) or (tick() - startTime > 2)
+                                
+                                -- 3. KILL & RESET
+                                tt.Character.Humanoid:ChangeState("Dead")
+                                if stvel then 
+                                    stvel(HRP) 
+                                end
+                                
+                                HRP.CFrame = pos -- Return to original spot
+                            end
+                        end
+                    end)
+
+                    if not _G.LoopKillBlobActive then break end
+                    task.wait(0.1) -- Small breather before next check
+                end
+            end)
+        end
+    end
+})    
+    
+TarTab:AddToggle({
+        Name = "Anti-AntiKick<font color=\"rgb(255,100,255)\"><b>[BLACKHOLE]</b></font>",
+        Default = false,
+        Callback = function(Value)
+            bool.loopGrabAntiKick1 = Value
+            if not bool.loopGrabAntiKick1 then return end 
+            local targetInv = workspace:FindFirstChild(selectedPlrName.."SpawnedInToys") 
+            local ShurikensToBlackhole = {}
+            while bool.loopGrabAntiKick1 and task.wait() do
+                for i = 1,10 do 
+                    local Shur = SpawnToy("NinjaKunai")
+                    if not Shur then continue end
+                    local StickyPart = FWD(Shur,"StickyPart")
+                    sno(StickyPart)
+                    Shur.Name = i
+                    task.delay(0.5,RenameInShop,Shur,"NinjaKunai","Anti-AntiKick(Kunai)")
+                    do
+                        local BodyPos = Instance.new("BodyPosition")
+                        BodyPos.Position = Vector3.new(math.random(-100,100),1e3,math.random(-100,100))
+                        BodyPos.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+                        BodyPos.Parent = StickyPart
+                    end
+                    table.insert(ShurikensToBlackhole,StickyPart)
+                end
+                local HRP = game.Players:FindFirstChild(selectedPlrName) and game.Players:FindFirstChild(selectedPlrName).Character and game.Players:FindFirstChild(selectedPlrName).Character:FindFirstChild("HumanoidRootPart") and game.Players:FindFirstChild(selectedPlrName).Character:FindFirstChild("HumanoidRootPart"):FindFirstChild("FirePlayerPart")
+                for _,v in pairs(ShurikensToBlackhole) do 
+                    if not v or not v.Parent then continue end
+                    StickyEvent:FireServer(
+                        v,
+                        HRP,
+                        CFrame.new(0,0,0)
+                    )
+                end
+                task.wait(10)
+            end
+        end    
+    })
+    
+
+
+TarTab:AddToggle({
+    Name = "Ragdoll Spam (Pallet Hammer)",
+    Default = false,
+    Callback = function(Value)
+        bool.RagdollSpamHammer = Value
+        
+        local RS = game:GetService("ReplicatedStorage")
+        local RunService = game:GetService("RunService")
+        local Player = game:GetService("Players").LocalPlayer
+
+        if Value then
+            etc.TargetPLR = game.Players:FindFirstChild(selectedPlrName)
+            if not etc.TargetPLR then 
+                if Notify then Notify("Error", "Select a target player first!") end
+                return 
+            end
+
+            task.spawn(function()
+                -- 1. Fetch necessary remotes
+                local MenuToys = RS:WaitForChild("MenuToys", 5)
+                local GrabEvents = RS:WaitForChild("GrabEvents", 5)
+                
+                local rSpawn = MenuToys and MenuToys:WaitForChild("SpawnToyRemoteFunction", 5)
+                local rDestroy = MenuToys and MenuToys:WaitForChild("DestroyToy", 5)
+                local rOwner = GrabEvents and GrabEvents:WaitForChild("SetNetworkOwner", 5)
+
+                -- 2. Spawn the Pallet
+                if rSpawn and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                    task.spawn(function()
+                        rSpawn:InvokeServer("PalletLightBrown", Player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0), Vector3.zero)
+                    end)
+                end
+
+                -- 3. Wait for Pallet to load locally
+                local toyFolder = workspace:WaitForChild(Player.Name .. "SpawnedInToys", 5)
+                if not toyFolder then return end
+
+                local palletModel = toyFolder:WaitForChild("PalletLightBrown", 5)
+                if not palletModel then return end
+
+                local palletPart = palletModel:WaitForChild("SoundPart", 5)
+                if not palletPart then return end
+
+                -- Claim initial ownership
+                if rOwner then
+                    rOwner:FireServer(palletPart, palletPart.CFrame)
+                end
+
+                local hammerGoingDown = true
+                local segmentIndex = 0
+                local lastOwnerTime = tick()
+
+                -- 4. Main Hammer Loop
+                while bool.RagdollSpamHammer and palletModel and palletModel.Parent do
+                    RunService.Heartbeat:Wait()
+
+                    etc.TargetPLR = game.Players:FindFirstChild(selectedPlrName)
+                    local targetChar = etc.TargetPLR and etc.TargetPLR.Character
+                    local targetHrp = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+
+                    if targetHrp and rOwner then
+                        -- Re-claim network ownership periodically to fight desync
+                        if tick() - lastOwnerTime > 1.0 then
+                            rOwner:FireServer(palletPart, palletPart.CFrame)
+                            lastOwnerTime = tick()
+                        end
+
+                        local startPos = targetHrp.Position + Vector3.new(0, 50, 0)
+                        local endPos = targetHrp.Position
+
+                        if hammerGoingDown then
+                            segmentIndex = segmentIndex + 1
+                            local segments = (SpamSetOwner and SpamSetOwner.Segments) or 10
+                            local alpha = segmentIndex / segments
+                            local nextPos = startPos:Lerp(endPos, alpha)
+
+                            palletPart.CFrame = CFrame.new(nextPos)
+                            palletPart.AssemblyLinearVelocity = Vector3.new(0, -50000, 0)
+                            palletPart.AssemblyAngularVelocity = Vector3.zero
+
+                            if segmentIndex >= segments then
+                                local impactPower = (SpamSetOwner and SpamSetOwner.ImpactPower) or 500
+                                palletPart.AssemblyLinearVelocity = Vector3.new(0, -impactPower, 0)
+                                hammerGoingDown = false
+                            end
+                        else
+                            palletPart.CFrame = CFrame.new(startPos)
+                            palletPart.AssemblyLinearVelocity = Vector3.zero
+                            segmentIndex = 0
+                            hammerGoingDown = true
+                        end
+                    else
+                        -- If target dies or is missing, idle the pallet above your own head
+                        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                            palletPart.CFrame = Player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
+                            palletPart.AssemblyLinearVelocity = Vector3.zero
+                        end
+                    end
+                end
+
+                -- 5. Cleanup when toggled off
+                if rDestroy and palletModel then
+                    rDestroy:FireServer(palletModel)
+                end
+            end)
+        end
+    end
+})
+
+    
+    
     
     TarTab:AddToggle({
     Name = "Loop Bomb Missile",
@@ -8317,7 +8537,7 @@ ServerTab:AddButton({
     })
    
 ServerTab:AddButton({
-    Name = "Spam Kick",
+    Name = "Spam Kick old",
     Callback = function()
         local blob = FindBlob()
         local oldCF = char:GetPivot()
@@ -8835,25 +9055,29 @@ MiscTab:AddSection({ Name = "<b>Line-Lags</b>"})
         end    
     })
     MiscTab:AddToggle({
-        Name = "Just Loop-Lag",
-        Default = false,
-        Callback = function(Value)
-            if Value then 
-                cons["LAGS"] = task.spawn(function()
-                    while RunService.RenderStepped:Wait() do
-                        task.defer(function()
+    Name = "Just Loop-Lag Strong",
+    Default = false,
+    Callback = function(Value)
+        if Value then 
+            cons["LAGS"] = task.spawn(function()
+                while true do
+                    task.spawn(function()
+                        for i = 1, 15 do
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 9e9, 0))
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 8e9, 0))
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 7e9, 0))
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 6e9, 0))
-                        end)
-                    end
-                end)
-            else 
-                cons:cancel("LAGS")
-            end
-        end    
-    })
+                        end
+                    end)
+                    task.defer(function() end)
+                    task.wait(0.17)
+                end
+            end)
+        else 
+            cons:cancel("LAGS")
+        end
+    end    
+})
     MiscTab:AddSection({ Name = "<b>Packets-Lags</b>"})
     local StringSize = string.len("metaballs metaballs metaballs metaballs metaballs metaballs metaballs metaballs")
     local function CalculateRepeats(Value)
@@ -9311,7 +9535,7 @@ Map ID: ]]..game.PlaceId
 
 InfoTab:AddLabel("Developer : Mrcat")
 
-InfoTab:AddLabel("UI Developer : Mrcat & هŒ–")
+InfoTab:AddLabel("UI Developer : Mrcat")
 
 InfoTab:AddLabel("Premuim Script 🔱")
 
