@@ -9092,6 +9092,32 @@ MiscTab:AddSection({ Name = "<b>Line-Lags</b>"})
             createLagWithGrabLine()
         end    
     })
+
+    MiscTab:AddToggle({
+    Name = "Loop Lag Death (Lags The Exploiters Even They have Anti lag and u lag too)",
+    Default = false,
+    Callback = function(Value)
+        if Value then 
+            cons["LAGS"] = task.spawn(function()
+                while true do
+                    task.spawn(function()
+                        for i = 1, 1999900000000000000000000000000000000000000 do
+                            CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 9e9, 0))
+                            CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 8e9, 0))
+                            CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 7e9, 0))
+                            CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 6e9, 0))
+                        end
+                    end)
+                    task.defer(function() end)
+                    task.wait(0.000)
+                end
+            end)
+        else 
+            cons:cancel("LAGS")
+        end
+    end    
+})
+    
     MiscTab:AddToggle({
     Name = "Just Loop-Lag Strong",
     Default = false,
