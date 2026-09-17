@@ -494,7 +494,7 @@ local Window = OrionLib:MakeWindow({
     IntroEnabled = true,
     IntroImage = "rbxassetid://90369054156879",
     IntroText = "LOADING...!!!",
-    Keybind = "K",
+    Keybind = Enum.KeyCode.K, -- تعديل الحرف هنا
     FreeMouse = true,
 })
 
@@ -9118,6 +9118,32 @@ MiscTab:AddSection({ Name = "<b>Line-Lags</b>"})
     end    
 })
     
+MiscTab:AddToggle({
+    Name = "Loop-Lag No escape Player",
+    Default = false,
+    Callback = function(Value)
+        if Value then 
+            cons["LAGS"] = task.spawn(function()
+                while true do
+                    task.spawn(function()
+                        for i = 1, 1500 do
+                            CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 9e9, 0))
+                            CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 8e9, 0))
+                            CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 7e9, 0))
+                            CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 6e9, 0))
+                        end
+                    end)
+                    task.defer(function() end)
+                    task.wait(1)
+                end
+            end)
+        else 
+            cons:cancel("LAGS")
+        end
+    end    
+})
+    
+    
     MiscTab:AddToggle({
     Name = "Just Loop-Lag Strong",
     Default = false,
@@ -9988,5 +10014,20 @@ InfoTab:AddButton({
         end
     end)
     plr.CharacterAdded:Connect(OnCharAdded)
+
+-- كود إخفاء وإظهار القائمة للـ PC بحرف K
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
+        for _, gui in pairs(CoreGui:GetChildren()) do
+            if gui.Name == "Orion" then
+                gui.Enabled = not gui.Enabled
+            end
+        end
+    end
+end)
+
 
 OrionLib:Init()
