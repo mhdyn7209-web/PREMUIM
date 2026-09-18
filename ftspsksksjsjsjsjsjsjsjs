@@ -494,7 +494,7 @@ local Window = OrionLib:MakeWindow({
     IntroEnabled = true,
     IntroImage = "rbxassetid://90369054156879",
     IntroText = "LOADING...!!!",
-    Keybind = Enum.KeyCode.K, -- تعديل الحرف هنا
+    Keybind = "K",
     FreeMouse = true,
 })
 
@@ -9094,14 +9094,14 @@ MiscTab:AddSection({ Name = "<b>Line-Lags</b>"})
     })
 
     MiscTab:AddToggle({
-    Name = "Loop Lag Death (Lags The Exploiters Even They have Anti lag and u lag too)",
+    Name = "Loop Lag Strongest",
     Default = false,
     Callback = function(Value)
         if Value then 
             cons["LAGS"] = task.spawn(function()
                 while true do
                     task.spawn(function()
-                        for i = 1, 1999900000000000000000000000000000000000000 do
+                        for i = 1, 25 do
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 9e9, 0))
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 8e9, 0))
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 7e9, 0))
@@ -9109,7 +9109,7 @@ MiscTab:AddSection({ Name = "<b>Line-Lags</b>"})
                         end
                     end)
                     task.defer(function() end)
-                    task.wait(0.000)
+                    task.wait(1)
                 end
             end)
         else 
@@ -9119,14 +9119,14 @@ MiscTab:AddSection({ Name = "<b>Line-Lags</b>"})
 })
     
 MiscTab:AddToggle({
-    Name = "Loop-Lag No escape Player",
+    Name = "Loop-Lag Stronger",
     Default = false,
     Callback = function(Value)
         if Value then 
             cons["LAGS"] = task.spawn(function()
                 while true do
                     task.spawn(function()
-                        for i = 1, 1500 do
+                        for i = 1, 15 do
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 9e9, 0))
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 8e9, 0))
                             CreateGrabLine:FireServer(workspace.SpawnLocation, CFrame.new(0, 7e9, 0))
@@ -9134,7 +9134,7 @@ MiscTab:AddToggle({
                         end
                     end)
                     task.defer(function() end)
-                    task.wait(1)
+                    task.wait(0.14)
                 end
             end)
         else 
@@ -9608,13 +9608,13 @@ local LocalPlayer = Players.LocalPlayer
 
 InfoTab:AddParagraph("INFORMATION", [[
 <font color="#00FFFF"><b>[PLAYER]</b></font>
-هگچه‰چ: ]]..LocalPlayer.Name..[[
+Username: ]]..LocalPlayer.Name..[[
 
 <font color="#FFFF00"><b>[USER ID]</b></font>
 ID: ]]..LocalPlayer.UserId..[[
 
 <font color="#FF00FF"><b>[DISPLAY]</b></font>
-è،¨ç¤؛هگچ: ]]..LocalPlayer.DisplayName..[[
+Name: ]]..LocalPlayer.DisplayName..[[
 
 <font color="#00FF00"><b>[SERVER]</b></font>
 Server ID: ]]..game.JobId..[[
@@ -10014,20 +10014,5 @@ InfoTab:AddButton({
         end
     end)
     plr.CharacterAdded:Connect(OnCharAdded)
-
--- كود إخفاء وإظهار القائمة للـ PC بحرف K
-local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
-        for _, gui in pairs(CoreGui:GetChildren()) do
-            if gui.Name == "Orion" then
-                gui.Enabled = not gui.Enabled
-            end
-        end
-    end
-end)
-
 
 OrionLib:Init()
